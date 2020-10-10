@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='windows-1252'?>
+
+<!-- This is a WiX package for `msitools`, used for windows builds -->
+
+<?if $(var.BuildArch) = x64 ?>
+<?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
+<?else ?>
+<?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
+<?endif ?>
+
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+    <Product Name='${APP}' Manufacturer='${MANUFACTURER}'
+             Id='*' 
+             UpgradeCode='51d30226-0a11-4cf0-b3aa-dd18a1f088fd'
+             Language='1033' Codepage='1252' Version='0.0.${T}.${VERSION}'>
+        <Package Id='*' Keywords='Installer' Description="${APP} ${VERSION} Installer"
+                 Comments='Copyright ${AUTHOR} ${YEAR}' Manufacturer='${MANUFACTURER}'
+                 InstallerVersion='200' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
+        <!-- Install location requires admin -->
+        <Condition Message="You need to be an administrator to install this product.">
+            Privileged 
+        </Condition>
+
+        <Media Id="1" Cabinet="product.cab" EmbedCab="yes"/>
+        <!-- We always replace existing versions if there is a package already installed.
+             This is to allow shuffling around debug builds on windows machines.
+             Package versioning here is based on epoch time, with the actual version appended as
+             an unchecked element, to allow windows to differentiate between any build. -->
+        <Upgrade Id="51d30226-0a11-4cf0-b3aa-dd18a1f088fd">
+            <UpgradeVersion Minimum="0.0.0" IncludeMinimum="yes" Maximum="99.99.${T}" IncludeMaximum="yes" Property="OLDERVERSIONBEINGUPGRADED" />
+        </Upgrade>
+
+        <!-- Remove other packages -->
+        <InstallExecuteSequence>
+            <RemoveExistingProducts After="InstallValidate" />
+        </InstallExecuteSequence>
+        
+        <!-- Add icon for menu, desktop, and package entries -->
+        <Icon Id="${APP}.ico" SourceFile="resources/icon.ico" />
+        
+        <Directory Id='TARGETDIR' Name='SourceDir'>
+            <Directory Id='$(var.PlatformProgramFilesFolder)' Name='Program Files'>
+                <Directory Id='Make' Name='${MANUFACTURER}'>
+                    <Directory Id='INSTALLDIR' Name='${APP} ${VERSION}'>
+                        <Component Id='BaseApp' Guid='44a410a1-2241-40f9-82fa-9d47ed72d806'>
+                            <File Id='EntryPoint' Name='${APP_EXEC}'
+                                  Source='build/${APP_EXEC}' KeyPath='yes'>
+                                <!-- Create start menu entry -->
+                                <Shortcut Id="EntryPointStart" Directory="ProgramMenuDir" Name="${APP}"
+                                          WorkingDirectory='INSTALLDIR' Icon="${APP}.ico"
+                                          Advertise="yes" />
+                                <!-- Create desktop entry -->
+                                <Shortcut Id="EntryPointDesktop" Directory="DesktopFolder" Name="${APP}"
+                                          WorkingDirectory='INSTALLDIR' Icon="${APP}.ico"
+                                          Advertise="yes" />
+                            </File>
+                        </Component>
+                    </Directory>
+                </Directory>
+            </Directory>
+            <!-- Ensure the menu entry is removed on uninstall -->
+            <Directory Id="ProgramMenuFolder" Name="Programs">
+                <Directory Id="ProgramMenuDir" Name="${APP}">
+                    <Component Id="ProgramMenuDir" Guid="235d7a16-e5dc-4845-a412-5f69331d3598">
+                        <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
+                        <RegistryValue Root='HKCU' Key='Software\${MANUFACTURER}\${APP}'
+                                       Type='string' Value='' KeyPath='yes' />
+                    </Component>
+                </Directory>
+            </Directory>
+
+            <Directory Id="DesktopFolder" Name="Desktop" />
+        </Directory>
+
+        <!-- reference components in pasted fragments -->
+        <Feature Id='Complete' Level='1'>
+            <ComponentRef Id='BaseApp' />
+            <ComponentGroupRef Id='BaseLua' />
+            <ComponentGroupRef Id='BaseConfig' />
+            <ComponentGroupRef Id='BaseResources' />
+        </Feature>
+
+        <!-- Make the icon show up in "Add or Remove Programs" -->
+        <Property Id="ARPPRODUCTICON" Value="${APP}.ico" />
+        <!-- disable repair/modify functions -->
+        <Property Id="ARPNOREPAIR" Value="1"/>
+        <Property Id="ARPNOMODIFY" Value="1"/>
+    </Product>
+    <!-- Generated fragments are emitted here -->
+    __SPLIT__
+</Wix>

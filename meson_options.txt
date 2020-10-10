@@ -1,24 +1,9 @@
-option('enable_glfw', type: 'boolean', value: false,
-       description: 'Enable legacy GLFW backend')
-option('disable_glx', type: 'boolean', value: false,
-       description: 'Disable GLX backend')
+option('lua_version', type: 'string', value: 'auto',
+       description: 'Lua version to use (implementation relative)')
+option('lua_implementation', type: 'string', value: 'luajit',
+       description: 'Lua implementation to use')
 option('standalone', type: 'boolean', value: false,
        description: 'Configure build to run without installation')
-option('glad', type: 'boolean', value: false,
-       description: 'Download and build GLAD headers (non-reproducable)')
-option('enable_obs', type: 'boolean', value: true,
-       description: 'Enable experimental OBS Studio plugin support')
-option('disable_config', type: 'boolean', value: true,
-       description: 'Skip building GLava GTK+ configuration tool')
-option('shader_install_dir', type: 'string', value: '/etc/xdg',
-       description: 'GLSL config/module system install directory')
-option('lua_install_dir', type: 'string', value: '/usr/share',
-       description: 'Location to install Lua modules for glava-config')
-option('lua_version', type: 'string', value: '5.3',
-       description: 'Lua version to use for glava-config')
-option('lua_implementation', type: 'string', value: 'lua',
-       description: 'Lua implementation to use (\'lua\' or \'luajit\')')
-option('resource_install_dir', type: 'string', value: '/usr/share/glava',
-       description: 'Location to install generic GLava resources')
-option('obs_plugin_install_dir', type: 'string', value: '/usr/lib/obs-plugins',
-       description: 'Location to install OBS plugin if enabled')
+option('confprefix', type: 'string', value: 'auto',
+       description: 'Prefix for system configuration files. `auto` uses the contents of `--prefix`, '
+      + 'unless it is set to `/usr`, in which case this variable is set to `/`. Used for `--sysconfdir`.')
