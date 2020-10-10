@@ -17,7 +17,8 @@ is_standalone = get_option('standalone')
 # Check for some programs used by scripts
 find_program('find')
 find_program('basename')
-iheaders = find_program('iheaders')
+# NOTE: disabled
+# iheaders = find_program('iheaders')
 if host_machine.system() == 'windows'
   find_program('sed')
   find_program('awk')
@@ -166,25 +167,27 @@ if lua_ver == 'auto'
       ).stdout().strip().split('\n')
     endforeach
     foreach s: run_command('basename', '-a', icheck_collected).stdout().strip().split('\n')
-      v = '?'
-      if host_machine.system() == 'windows'
-        v = s.split(lua_impl)[1].split('.dll')[0]
-        if v.startswith('-')
-          v = v.split('-')[1]
-        endif
-      else
-        vi = s.split('.so.')
-        if vi.length() > 1
-          v = s.split('.so.')[1]
+      if s != ''
+        v = '?'
+        if host_machine.system() == 'windows'
+          v = s.split(lua_impl)[1].split('.dll')[0]
+          if v.startswith('-')
+            v = v.split('-')[1]
+          endif
         else
+          vi = s.split('.so.')
+          if vi.length() > 1
+            v = s.split('.so.')[1]
+          else
+            v = '0.0.0'
+          endif
+        endif
+        if lua_impl != 'luajit' and s.contains('luajit')
           v = '0.0.0'
         endif
-      endif
-      if lua_impl != 'luajit' and s.contains('luajit')
-        v = '0.0.0'
-      endif
-      if v.version_compare('>' + latest)
-        latest = v
+        if v.version_compare('>' + latest)
+          latest = v
+        endif
       endif
     endforeach
     if latest == '0.0.0'
@@ -413,8 +416,7 @@ exec_target = executable(
 
 if host_machine.system() == 'windows'
   # Create MSI package for executable
-github   msi_output = meson.project_name() + '-' + meson.project_version() +
-               '-' + host_machine.cpu_family()
+  msi_output = meson.project_name() + '-' + meson.project_version() + '-' + host_machine.cpu_family()
   if get_option('buildtype').startswith('debug')
     msi_output += '-debug'
   endif

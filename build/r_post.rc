@@ -1,0 +1,24 @@
+1 VERSIONINFO
+FILEVERSION     1,0,0,0
+PRODUCTVERSION  1,0,0,0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904E4"
+    BEGIN
+      VALUE "CompanyName", "Jarcode"
+      VALUE "FileDescription", "Minecraft modified with ComputerCraftEdu"
+      VALUE "FileVersion", "2c27f50"
+      VALUE "InternalName", "computercraftedu"
+      VALUE "LegalCopyright", "Levi Webb"
+      VALUE "OriginalFilename", "computercraftedu.exe"
+      VALUE "ProductName", "ComputerCraftEdu"
+      VALUE "ProductVersion", "2c27f50"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 1252
+  END
+END
+2 ICON "resources/icon.ico"

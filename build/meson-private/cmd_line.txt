@@ -1,0 +1,6 @@
+[options]
+buildtype = release
+
+[properties]
+cross_file = ['win32_host.ini']
+

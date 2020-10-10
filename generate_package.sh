@@ -23,3 +23,5 @@ find resources -type f -print | awk '{print "./" $0}' | wixl-heat --directory-re
 find config -type f -print | wixl-heat --directory-ref INSTALLDIR --component-group BaseConfig -p config/ --var V | sed -e "s/\$(V)/config/" | sed -e '1,2d' | head -n -3 >> "${2}/p_post.wxs"
 sed -n -e '/__SPLIT__/,$p' "${2}/p_out.wxs" | sed -e '1,1d' >> "${2}/p_post.wxs"
 wixl -D "BuildArch=${11}" -a ${11} -I "${2}" -o "${2}/${4}.msi" "${2}/p_post.wxs"
+cd "${2}"
+echo "${4}.msi" > msi_targetfile

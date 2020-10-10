@@ -1,0 +1,14 @@
+[
+  {
+    "directory": "/home/levi/C/cce-installer/build",
+    "command": "/usr/bin/i686-w64-mingw32-gcc -Icomputercraftedu.exe.p -I. -I.. -I/home/levi/C/cce-installer/src -I/home/levi/C/cce-installer/build/headers -I/usr/i686-w64-mingw32/include/luajit-2.0 -I/usr/i686-w64-mingw32/include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O2 -fvisibility=hidden -DAPP_WIN '-DAPP_VERSION=\"2c27f50\"' '-DAPP_SYS_CFG_PATH=\".\"' '-DAPP_RESOURCE_PATH=\"./resources\"' '-DAPP_LUA_PATH=\"./luajit-2.0\"' -pthread -MD -MQ computercraftedu.exe.p/src_main.c.obj -MF computercraftedu.exe.p/src_main.c.obj.d -o computercraftedu.exe.p/src_main.c.obj -c ../src/main.c",
+    "file": "../src/main.c",
+    "output": "computercraftedu.exe.p/src_main.c.obj"
+  },
+  {
+    "directory": "/home/levi/C/cce-installer/build",
+    "command": "/usr/bin/i686-w64-mingw32-gcc -Icomputercraftedu.exe.p -I. -I.. -I/home/levi/C/cce-installer/src -I/home/levi/C/cce-installer/build/headers -I/usr/i686-w64-mingw32/include/luajit-2.0 -I/usr/i686-w64-mingw32/include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -O2 -fvisibility=hidden -DAPP_WIN '-DAPP_VERSION=\"2c27f50\"' '-DAPP_SYS_CFG_PATH=\".\"' '-DAPP_RESOURCE_PATH=\"./resources\"' '-DAPP_LUA_PATH=\"./luajit-2.0\"' -pthread -MD -MQ computercraftedu.exe.p/src_common.c.obj -MF computercraftedu.exe.p/src_common.c.obj.d -o computercraftedu.exe.p/src_common.c.obj -c ../src/common.c",
+    "file": "../src/common.c",
+    "output": "computercraftedu.exe.p/src_common.c.obj"
+  }
+]
