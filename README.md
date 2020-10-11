@@ -14,8 +14,8 @@ Educators should be aware that this version of the game is the original Java ver
 
 | OS | ! | Extra Details
 | :---: | --- | --- |
-| Windows 7/8.1/10 64-bit | ![-](https://placehold.it/15/118932/000000?text=+) | |
-| Windows 7/8.1/10 32-bit | ![-](https://placehold.it/15/118932/000000?text=+) | |
+| Windows 7/8.1/10 64-bit | ![-](https://placehold.it/15/118932/000000?text=+) | N/A |
+| Windows 7/8.1/10 32-bit | ![-](https://placehold.it/15/118932/000000?text=+) | N/A |
 | Windows XP 64/32-bit | ![-](https://placehold.it/15/1589F0/000000?text=+) | Likely works, untested. |
 | ChromeOS x86_64 | ![-](https://placehold.it/15/118932/000000?text=+) | Requires Linux application compatibility to be enabled (often disabled on managed devices) |
 | ChromeOS arm64 | ![-](https://placehold.it/15/f03c15/000000?text=+) | Currently unsupported, will be supported in the future. |
@@ -39,7 +39,7 @@ The build process _requires_ a Linux environment to function correctly, and due 
 
 Once you've tracked down all the dependencies, simply run `./package_all.sh`. This will produce packages for all platforms in `pkg_out`.
 
-* \[1\] Building Pacman packages on other distributions may prove difficult. It is likely that you will have to manually build some mingw dependencies, which can be very annoying.
+* \[1\] Building `pacman` packages on other distributions may prove difficult. It is also likely that you will have to manually build some mingw dependencies, which can be very annoying.
 
 * \[2\] Currently, `mingw-w64-lua51` requires an edit to its `PKGBUILD` before it functions correctly, as specified by my comment on the AUR submission:
 
