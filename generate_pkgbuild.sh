@@ -18,7 +18,7 @@ pkgrel=1
 pkgdesc='${DESC}'
 arch=('x86_64')
 license=('GPL3')
-depends=('glfw' 'freetype2' 'libuv' 'luajit')
+depends=('curl' 'lua')
 makedepends=('git')
 
 build() {

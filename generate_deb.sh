@@ -37,7 +37,7 @@ echo "Homepage:"                         >> control
 echo ""                                  >> control
 echo "Package: ${NAME}"                  >> control
 echo "Architecture: all"                 >> control
-echo "Depends: \${misc:Depends}, luajit" >> control
+echo "Depends: \${misc:Depends}, liblua5.1, curl" >> control
 echo "Description: ${DESC}"              >> control
 
 echo "Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/" >> copyright

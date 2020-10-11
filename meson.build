@@ -37,7 +37,7 @@ endif
 
 app_dependencies = [
   dependency('threads'),
-  dependency('libuv')
+  dependency('libcurl')
 ]
 
 app_link_args = []
@@ -145,13 +145,13 @@ if lua_ver == 'auto'
     lua_ichecks = []
     if lua_impl == 'luajit'
       if host_machine.system() == 'windows'
-        lua_ichecks = ['luajit-*.*.dll']
+        lua_ichecks = ['luajit-*.*.dll', 'luajit-*.*.dll.a']
       else
         lua_ichecks = ['libluajit-*.*.so.*']
       endif
     elif lua_impl == 'lua'
       if host_machine.system() == 'windows'
-        lua_ichecks = ['lua*.dll']
+        lua_ichecks = ['lua*.dll', 'lua*.dll.a', 'liblua*.dll', 'liblua*.dll.a']
       else
         lua_ichecks = ['liblua.so.*', 'liblua*.*.so.*']
       endif
@@ -171,11 +171,18 @@ if lua_ver == 'auto'
         v = '?'
         if host_machine.system() == 'windows'
           v = s.split(lua_impl)[1].split('.dll')[0]
+          # `-2.0` -> `2.0`
           if v.startswith('-')
             v = v.split('-')[1]
           endif
+          # `51` -> `5.1`
+          if not v.contains('.')
+            v = v.to_int()
+            v = (v / 10).to_string() + '.' + (v % 10).to_string()
+          endif
         else
           vi = s.split('.so.')
+          # use version after split
           if vi.length() > 1
             v = s.split('.so.')[1]
           else
@@ -240,6 +247,10 @@ summary({ 'Prefix':               '"' + p_prefix          + '"',
         section: '[Directories]')
 
 add_project_arguments(
+  # Pass the application name
+  '-DAPP_NAME="' + meson.project_name() + '"',
+  # Pass the formatted application name
+  '-DAPP_FNAME="' + formatted_app_name + '"',
   # Pass the application version
   '-DAPP_VERSION="' + app_version + '"',
   # Pass the system (non user local) configuration path
@@ -247,15 +258,21 @@ add_project_arguments(
   # Pass the resource path for other portable code (shaders) and resources
   '-DAPP_RESOURCE_PATH="' + resource_dir + '"',
   # Pass the path for loading lua modules so the stub loading code can ensure
-  # that it is present in `package.path` (and warning the user if it has to be
-  # added at runtime). This is primarily for forcing the application to load
-  # older versions of bytecode if the lua installation was updated on the system.
+  # that it is present in `package.path`
   '-DAPP_LUA_PATH="' + resource_dir_base + '/' + lua_mod_base + '"',
   language: ['c'])
 
 run_command(find_program('rm'), '-rf', meson.build_root() + '/luac-out.p')
 run_command(find_program('mkdir'), '-p', meson.build_root() + '/' + lua_mod_base)
-run_command(find_program('ln'), '-sfT', '../luac-out.p', meson.build_root() + '/' + lua_mod_path)
+depth_arr = ['..']
+if lua_mod_base.contains('/')
+  depth_arr = []
+  foreach _: lua_mod_base.split('/')
+    depth_arr += '..'
+  endforeach
+endif
+run_command(find_program('ln'), '-sfT', '/'.join(depth_arr) + '/luac-out.p',
+            meson.build_root() + '/' + lua_mod_path)
 
 # This really hacky piece of code allows Meson to recursively track all lua
 # sources and their corresponding compiled objects. Because of how generators
@@ -266,7 +283,7 @@ run_command(find_program('ln'), '-sfT', '../luac-out.p', meson.build_root() + '/
 # This is quite useful anyway since it obfuscates the functionality of the binary
 # somewhat, and allows us to generate a table of files at build time.
 g_prog    = find_program(luac_name)
-g_output  = '-@BASENAME@.' + luac_output_ext
+g_output  = '@BASENAME@.' + luac_output_ext
 g_args    = luac_args
 objs      = []
 lns       = []
@@ -288,12 +305,18 @@ foreach source: run_command(
     i += 1
   endforeach
   pre = '/'.join(sorted)
-  fmt = run_command('./lua_fmt.sh', pre).stdout().strip()
+  if parts.length() > 2
+    # generate file prefix format for directory structure
+    fmt = run_command('./lua_fmt.sh', pre).stdout().strip() + '-'
+  else
+    # root directory can just use a unique prefix
+    fmt = '0-'
+  endif
   fn = basename.split('.')
   if sorted.length() > 0
     pre += '/'
   endif
-  lns += '["' + pre + basename + '"]="' + fmt + '-' + fn[0] + '.' + luac_output_ext + '"'
+  lns += '["' + pre + basename + '"]="' + fmt + fn[0] + '.' + luac_output_ext + '"'
   
   objs += generator(g_prog, output: fmt + g_output, arguments: g_args).process(source)
 endforeach
@@ -338,15 +361,18 @@ if get_option('lua_implementation') == 'luajit'
     lua_found = lua_inc
   endif
 else
-  l_1 = cc.find_library(lua_impl + lua_ver_s, required: false)
-  l_2 = cc.find_library(lua_impl, required: false)
-  if l_1.found() == true
-    app_dependencies += l_1
-    lua_found = lua_impl + lua_ver_s
-  elif l_2.found() == true
-    app_dependencies += l_2
-    lua_found = lua_impl
-  endif
+  list = [lua_impl + lua_ver_s, lua_impl + ''.join(lua_ver_s.split('.')), lua_impl]
+  foreach entry: list
+    ret = cc.find_library(entry, required: false)
+    if ret.found()
+      app_dependencies += ret
+      lua_found = entry
+      break
+    endif
+  endforeach
+endif
+if lua_found == '?'
+  error('Failed to locate Lua library.')
 endif
 
 pre_targets = []

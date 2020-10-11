@@ -1,6 +1,6 @@
-option('lua_version', type: 'string', value: 'auto',
+option('lua_version', type: 'string', value: '5.1',
        description: 'Lua version to use (implementation relative)')
-option('lua_implementation', type: 'string', value: 'luajit',
+option('lua_implementation', type: 'string', value: 'lua',
        description: 'Lua implementation to use')
 option('standalone', type: 'boolean', value: false,
        description: 'Configure build to run without installation')

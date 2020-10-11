@@ -4,7 +4,7 @@
 # IMPORTANT: this is not meant for package maintainers.
 #
 rm -rf build
-meson build --prefix=/usr --buildtype=release -D c_args="-march=native"
+meson build --prefix=/usr --buildtype=release
 cd build
 # `makepkg -srif` to include automatic installation
 makepkg -srf

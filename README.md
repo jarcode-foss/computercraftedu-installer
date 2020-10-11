@@ -31,15 +31,21 @@ If you are a programmer or administrator willing to dive into how these packages
 
 ### Manual Building
 
-The build process _requires_ a Linux environment to function correctly, and due to the usage of cross-compilation tools it is advised to use Arch Linux for ease of accessing AUR packages. Although other distributions will suffice*, this assumes you are on Arch.
+The build process _requires_ a Linux environment to function correctly, and due to the usage of cross-compilation tools it is advised to use Arch Linux for ease of accessing and building AUR packages. Although other distributions will suffice \[1\], this assumes you are on Arch.
 
-**Required packages:** `base-devel`, `meson`, `libuv`, `lua`, `dpkg`, `mingw-w64-gcc`, `mingw-w64-libuv`, `mingw-w64-lua`
+**Required packages:** `base-devel`, `meson`, `curl`, `lua51`, `dpkg`, `mingw-w64-gcc`
 
-**Required AUR packages:** `msitools`, `debhelper`, `debian-utils`, `perl-pod-parser`
+**Required AUR packages:** `msitools`, `debhelper`, `debian-utils`, `perl-pod-parser`, `mingw-w64-curl`, `mingw-w64-lua51` [2]
 
 Once you've tracked down all the dependencies, simply run `./package_all.sh`. This will produce packages for all platforms in `pkg_out`.
 
-\* Building Pacman packages on other distributions may prove difficult
+* \[1\] Building Pacman packages on other distributions may prove difficult. It is likely that you will have to manually build some mingw dependencies, which can be very annoying.
+
+* \[2\] Currently, `mingw-w64-lua51` requires an edit to its `PKGBUILD` before it functions correctly, as specified by my comment on the AUR submission:
+
+> This package unnecessarily uses `g++`, which causes the resulting library to have linkage to extra C++ symbols. This can be fixed by replacing the instance of `g++` on line 31 of the PKGBUILD to `gcc`.
+
+* You can change lua versions easily by installing the appropriate dependencies, modifying `generate_deb.sh` and `generate_pkgbuild.sh` with the respective dependencies, and then editing the default in `meson_options.txt` to globally change the version or using `-Dlua_version=...` in the appropriate build script.
 
 ## License
 
