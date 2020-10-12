@@ -12,17 +12,17 @@ Educators should be aware that this version of the game is the original Java ver
 
 ## Supported Platforms:
 
-| OS | ! | Extra Details
+| OS | ! | Format | Extra Details
 | :---: | --- | --- |
-| Windows 7/8.1/10 64-bit | ![-](https://placehold.it/15/118932/000000?text=+) | N/A |
-| Windows 7/8.1/10 32-bit | ![-](https://placehold.it/15/118932/000000?text=+) | N/A |
-| Windows XP 64/32-bit | ![-](https://placehold.it/15/1589F0/000000?text=+) | Likely works, untested |
-| ChromeOS x86_64 | ![-](https://placehold.it/15/118932/000000?text=+) | Requires Linux application compatibility to be enabled (often disabled on managed devices) |
-| ChromeOS arm64 | ![-](https://placehold.it/15/f03c15/000000?text=+) | Currently unsupported, may be supported in the future. |
-| Debian/Ubuntu Linux (amd64) | ![-](https://placehold.it/15/118932/000000?text=+) | Should also function on any debian-based distribution. Source install available with `./package_debian.sh install`. |
-| Arch Linux x86_64 | ![-](https://placehold.it/15/118932/000000?text=+) | Should also function on any arch-based distribution. Installed with `pacman -U`, or through source with `./package_arch.sh install`. |
-| OSX x86_64 (10.7+) | ![-](https://placehold.it/15/1589F0/000000?text=+) | Untested |
-| OSX i386, PowerPC | ![-](https://placehold.it/15/f03c15/000000?text=+) | Unsupported |
+| Windows 7/8.1/10 64-bit | ![-](https://placehold.it/15/118932/000000?text=+) | `.msi` | N/A |
+| Windows 7/8.1/10 32-bit | ![-](https://placehold.it/15/118932/000000?text=+) | `.msi` | N/A |
+| Windows XP 64/32-bit | ![-](https://placehold.it/15/1589F0/000000?text=+) | `.msi` | Likely works, untested |
+| ChromeOS x86_64 | ![-](https://placehold.it/15/118932/000000?text=+) | `.deb` | Requires Linux application compatibility to be enabled (often disabled on managed devices) |
+| ChromeOS arm64 | ![-](https://placehold.it/15/f03c15/000000?text=+) | `.deb` | Currently unsupported, may be supported in the future. |
+| Debian/Ubuntu Linux (amd64) | ![-](https://placehold.it/15/118932/000000?text=+) | `.deb` | Should also function on any debian-based distribution. Source install available with `./package_debian.sh install`. |
+| Arch Linux x86_64 | ![-](https://placehold.it/15/118932/000000?text=+) | `.pkg.tar.zst` | Should also function on any arch-based distribution. Installed with `pacman -U`, or through source with `./package_arch.sh install`. |
+| OSX x86_64 (10.7+) | ![-](https://placehold.it/15/1589F0/000000?text=+) | `.pkg` | Untested |
+| OSX i386, PowerPC | ![-](https://placehold.it/15/f03c15/000000?text=+) | `?` | Unsupported |
 
 ## Usage
 
