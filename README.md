@@ -13,7 +13,7 @@ Educators should be aware that this version of the game is the original Java ver
 ## Supported Platforms:
 
 | OS | ! | Format | Extra Details
-| :---: | --- | --- |
+| :---: | --- | --- | --- |
 | Windows 7/8.1/10 64-bit | ![-](https://placehold.it/15/118932/000000?text=+) | `.msi` | N/A |
 | Windows 7/8.1/10 32-bit | ![-](https://placehold.it/15/118932/000000?text=+) | `.msi` | N/A |
 | Windows XP 64/32-bit | ![-](https://placehold.it/15/1589F0/000000?text=+) | `.msi` | Likely works, untested |
