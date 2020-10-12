@@ -17,13 +17,13 @@ is_standalone = get_option('standalone')
 # Check for some programs used by scripts
 find_program('find')
 find_program('basename')
+find_program('sed')
+find_program('awk')
+find_program('head')
+find_program('bash')
 # NOTE: disabled
 # iheaders = find_program('iheaders')
 if host_machine.system() == 'windows'
-  find_program('sed')
-  find_program('awk')
-  find_program('head')
-  find_program('bash')
   find_program('wixl')
   find_program('wixl-heat')
 endif
@@ -35,9 +35,16 @@ else
   add_project_arguments('-fvisibility=hidden', language: 'c')
 endif
 
+static_libs = false
+if host_machine.system() == 'windows'
+  static_libs = true
+elif host_machine.system() == 'osx'
+  static_libs = true
+endif
+
 app_dependencies = [
-  dependency('threads'),
-  dependency('libcurl')
+  dependency('threads', static: static_libs),
+  dependency('libcurl', static: static_libs)
 ]
 
 app_link_args = []
@@ -45,7 +52,11 @@ app_link_args = []
 # Closure hack
 if cc.get_id() == 'clang'
   add_project_arguments('-fblocks', language: 'c')
-  app_dependencies += cc.find_library('BlocksRuntime')
+  if host_machine.system() == 'osx'
+    app_dependencies += cc.find_library('BlocksRuntime', dirs: meson.get_cross_property('osx_library_path'))
+  else
+    app_dependencies += cc.find_library('BlocksRuntime')
+  endif
 endif
 
 conf_prefix = get_option('confprefix')
@@ -78,6 +89,10 @@ if host_machine.system() == 'windows'
   app_link_args += '-Wl,-subsystem,windows'
 endif
 
+if host_machine.system() == 'osx'
+  add_project_arguments('-DAPP_OSX', language: ['c'])
+endif
+
 # Note: the OSX install directives only exist for future platform support
 if host_machine.system() == 'darwin'
   add_project_arguments('-DAPP_OSX', language: ['c'])
@@ -95,6 +110,10 @@ resource_dir_base = get_option('prefix') + '/' + get_option('datadir')
 if host_machine.system() == 'windows'
   # Windows uses a single installation folder
   resource_dir      = './resources'
+  resource_dir_base = '.'
+  sys_config_dir    = '.'
+elif host_machine.system() == 'osx'
+  resource_dir      = './content'
   resource_dir_base = '.'
   sys_config_dir    = '.'
 elif is_standalone
@@ -123,10 +142,14 @@ endforeach
 
 # Since we're manually locating lua(jit), we have to manually set the include argument.
 lua_inc_path = '/usr/include/'
-lua_lib_path = '/usr/lib'
+lua_lib_path = '/usr/lib/'
 if host_machine.system() == 'windows'
   lua_inc_path = meson.get_cross_property('win_include_path') + '/'
   lua_lib_path = meson.get_cross_property('win_library_path') + '/'
+endif
+if host_machine.system() == 'osx'
+  lua_inc_path = meson.get_cross_property('osx_include_path') + '/'
+  lua_lib_path = meson.get_cross_property('osx_library_path') + '/'
 endif
 
 luac_args    = ['-o', '@OUTPUT@', '@INPUT@']
@@ -137,11 +160,34 @@ lua_ver      = get_option('lua_version')
 # detecting mingw lua installations.
 if lua_ver == 'auto'
   # Try letting meson find it
-  mcheck = dependency(lua_impl, required: false)
+  if lua_ver != 'any'
+    nver_parts = lua_ver.split('.')
+    collected = []
+    idx = 0
+    foreach part: nver_parts
+      if idx == nver_parts.length() - 1
+        collected += part.to_int() + 1
+      else
+        collected += part.to_int()
+      endif
+      idx = idx + 1
+    endforeach
+    lua_ver_next = '.'.join(collected)
+    message('Search criteria: [>=' + lua_ver + ', <' + lua_ver_next + ']')
+    mcheck = dependency(lua_impl, static: static_libs, required: false,
+                        version: ['>=' + lua_ver, '<' + lua_ver_next])
+  else
+    mcheck = dependency(lua_impl, static: static_libs, required: false)
+  endif
   if mcheck.found()
     lua_ver = mcheck.version()
     message('Located packaged lua version: ' + lua_ver)
   else
+    if host_machine.system() == 'osx'
+      # OSXCross packlets have pkg-config entries, so we can just rely on that.
+      # Error if that somehow failed.
+      error('Cannot find Lua library')
+    endif
     lua_ichecks = []
     if lua_impl == 'luajit'
       if host_machine.system() == 'windows'
@@ -206,9 +252,9 @@ if lua_ver == 'auto'
   endif
 endif
 lua_inc      = get_option('lua_implementation') + get_option('lua_version')
-lua_sdir     = lua_impl
 vs = lua_ver.split('.')
 lua_ver_s    = '.'.join([vs[0], vs[1]])
+lua_sdir     = lua_impl
 luac_name    = 'luac' + lua_ver_s
 lua_mod_base = lua_impl + '/' + lua_ver_s
 if get_option('lua_implementation') == 'luajit'
@@ -348,8 +394,17 @@ luac_target = custom_target(
 # different naming schemes for standard lua.
 lua_found = '?'
 if get_option('lua_implementation') == 'luajit'
-  lj_l1 = cc.find_library(lua_impl + lua_ver_s, required: false)
-  lj_l2 = cc.find_library(lua_inc,            required: false)
+  if host_machine.system() == 'osx'
+    lj_l1 = cc.find_library(lua_impl + lua_ver_s, required: false,
+                            dirs: meson.get_cross_property('osx_library_path'),
+                            static: static_libs)
+    lj_l2 = cc.find_library(lua_inc,              required: false,
+                            dirs: meson.get_cross_property('osx_library_path'),
+                            static: static_libs)
+  else
+    lj_l1 = cc.find_library(lua_impl + lua_ver_s, required: false, static: static_libs)
+    lj_l2 = cc.find_library(lua_inc,              required: false, static: static_libs)
+  endif
   assert(lj_l1.found() == true or lj_l2.found() == true,
          'Could not locate library name "' + lua_impl + lua_ver_s
          + '" or "' + lua_inc + '". Is it installed?')
@@ -361,9 +416,16 @@ if get_option('lua_implementation') == 'luajit'
     lua_found = lua_inc
   endif
 else
-  list = [lua_impl + lua_ver_s, lua_impl + ''.join(lua_ver_s.split('.')), lua_impl]
+  list = [lua_impl + lua_ver_s, lua_impl + ''.join(lua_ver_s.split('.')),
+          lua_impl + '-' + lua_ver_s, lua_impl]
   foreach entry: list
-    ret = cc.find_library(entry, required: false)
+    if host_machine.system() == 'osx'
+      ret = cc.find_library(entry, required: false,
+                            dirs: meson.get_cross_property('osx_library_path')
+                                  + '/lua-' + lua_ver_s, static: static_libs)
+    else
+      ret = cc.find_library(entry, required: false, static: static_libs)
+    endif
     if ret.found()
       app_dependencies += ret
       lua_found = entry
@@ -429,16 +491,22 @@ sources = run_command(
 # NOTE: remove following line if iheader functionality enabled
 stripped_sources = sources
 
+unix_install_dir = 'bin'
+if host_machine.system() == 'osx'
+  unix_install_dir = '.'
+endif
+
 exec_target = executable(
   meson.project_name(),
   link_depends: pre_targets,
   link_args:    pre_objects,
   sources:      stripped_sources,
   dependencies: app_dependencies,
-  c_args:    ['-I' + meson.source_root() + '/src',
-              '-I' + meson.build_root()  + '/headers',
-              '-I' + lua_inc_path + lua_inc],
-  install:   true)
+  c_args:      ['-I' + meson.source_root() + '/src',
+                '-I' + meson.build_root()  + '/headers',
+                '-I' + lua_inc_path + lua_inc],
+  install:      true,
+  install_dir:  unix_install_dir)
 
 if host_machine.system() == 'windows'
   # Create MSI package for executable
@@ -465,18 +533,31 @@ elif host_machine.system() == 'linux' and not is_standalone
               '@INPUT@', '@OUTDIR@',
               meson.project_name(), formatted_app_name, app_desc,
               get_option('prefix') + '/' + get_option('bindir') + '/' + meson.project_name(),
-              resource_dir + '/icon.ico'],
+              resource_dir + '/icon.png'],
     build_by_default: true,
     install: true,
     install_dir: resource_dir_base + '/applications')
+  run_command('./generate_pkgbuild.sh', meson.build_root(), meson.project_name(),
+              meson.project_version(), app_desc)
+  debian_arch_map = { 'x86_64' :'amd64',
+                      'i686'   :'i386', # debian uses i386 as the identifier but requires i686
+                      'x86'    :'i386' }
+  arch_str = host_machine.cpu_family()
+  arch_str = debian_arch_map.get(arch_str, arch_str)
+  run_command('./generate_deb.sh', meson.build_root(), meson.project_name(),
+              meson.project_version(), app_desc, app_author, app_email, app_year,
+             arch_str)
+elif host_machine.system() == 'osx' and not is_standalone
+  run_command('./generate_pkg.sh', meson.build_root(), meson.project_name(),
+              meson.project_version(), app_desc, app_author, app_email, app_year,
+              app_manufacturer, formatted_app_name)
+endif
+
+if (host_machine.system() == 'osx' or host_machine.system() == 'linux') and not is_standalone
   install_subdir('config',    install_dir: sys_config_dir, strip_directory: true)
   install_subdir('resources', install_dir: resource_dir,   strip_directory: true)
   install_subdir('build/luac-out.p', install_dir: resource_dir_base + '/' + lua_mod_path,
                  strip_directory: true)
-  run_command('./generate_pkgbuild.sh', meson.build_root(), meson.project_name(),
-              meson.project_version(), app_desc)
-  run_command('./generate_deb.sh', meson.build_root(), meson.project_name(),
-              meson.project_version(), app_desc, app_author, app_email, app_year)
 endif
 
 summary({ 'Standalone': is_standalone,

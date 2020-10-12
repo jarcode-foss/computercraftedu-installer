@@ -21,7 +21,7 @@ Educators should be aware that this version of the game is the original Java ver
 | ChromeOS arm64 | ![-](https://placehold.it/15/f03c15/000000?text=+) | Currently unsupported, will be supported in the future. |
 | Debian/Ubuntu Linux | ![-](https://placehold.it/15/118932/000000?text=+) | Should also function on any debian-based distribution. |
 | Arch Linux | ![-](https://placehold.it/15/118932/000000?text=+) | Should also function on any arch-based distribution. Installed with `pacman -U`. |
-| OSX | ![-](https://placehold.it/15/f03c15/000000?text=+) | Currently unsupported, support may be added in the future. |
+| OSX | ![-](https://placehold.it/15/1589F0/000000?text=+) | Untested |
 
 ## Usage
 
@@ -33,15 +33,33 @@ If you are a programmer or administrator willing to dive into how these packages
 
 The build process _requires_ a Linux environment to function correctly, and due to the usage of cross-compilation tools it is advised to use Arch Linux for ease of accessing and building AUR packages. Although other distributions will suffice \[1\], this assumes you are on Arch.
 
-**Required packages:** `base-devel`, `meson`, `curl`, `lua51`, `dpkg`, `mingw-w64-gcc`
+**Required packages:** `base-devel`, `meson`, `curl`, `lua51`, `dpkg`, `mingw-w64-gcc`, `cpio`
 
-**Required AUR packages:** `msitools`, `debhelper`, `debian-utils`, `perl-pod-parser`, `mingw-w64-curl`, `mingw-w64-lua51` [2]
+**Required AUR packages:** `msitools`, `debhelper`, `debian-utils`, `perl-pod-parser`, `mingw-w64-curl`, `mingw-w64-lua51` [2], `apple-darwin-osxcross`, `xar`, `bomutils-git` [3]
+
+**Required Macports packages:** `lua51`, `curl`, `libblocksruntime`
+
+Macports packages can be installed with the AUR package of OSXCross as follows:
+de
+```bash
+$ cd /opt/osxcross/bin
+$ MACOSX_DEPLOYMENT_TARGET=10.7 PATH=$PATH:. sudo -E osxcross-macports lua51 curl libblocksruntime
+```
+
+Macports Lua headers require a manual symbolic link fix:
+
+```bash
+$ cd /opt/osxcross/macports/pkgs/opt/local/include
+$ sudo ln -s lua-5.1 lua5.1
+```
 
 Once you've tracked down all the dependencies, simply run `./package_all.sh`. This will produce packages for all platforms in `pkg_out`.
 
-* \[1\] Building `pacman` packages on other distributions may prove difficult. It is also likely that you will have to manually build some mingw dependencies, which can be very annoying.
+* \[1\] Building `pacman` packages on other distributions may prove difficult. It is also likely that you will have to manually build some mingw dependencies, which can be very annoying. Additionally, the OSXCross prefix of this repository is expected to be `/opt/osxcross`.
 
 * \[2\] Currently, `mingw-w64-lua51` requires an edit to its `PKGBUILD` before it functions correctly, as specified by my comment on the AUR submission:
+
+* \[3\] The `bomutils-git` AUR package was created for this project. Other distributions will need to compile directly from upstream.
 
 > This package unnecessarily uses `g++`, which causes the resulting library to have linkage to extra C++ symbols. This can be fixed by replacing the instance of `g++` on line 31 of the PKGBUILD to `gcc`.
 

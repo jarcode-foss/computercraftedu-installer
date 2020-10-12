@@ -4,13 +4,8 @@
 # IMPORTANT: this is not meant for package maintainers.
 #
 rm -rf build
-meson build --prefix=/usr --buildtype=release
+LD_LIBRARY_PATH=/opt/osxcross/lib meson build --prefix=/ --buildtype=release --cross-file osx_host.ini
 cd build
-# `makepkg -srif` to include automatic installation
-makepkg -srf
-target=`cat arch_targetfile`
+./osxbuild.sh
+target=`cat osx_targetfile`
 echo "Package Built: '${target}'"
-if [[ $1 == install ]]
-then
-    sudo pacman -U $target
-fi

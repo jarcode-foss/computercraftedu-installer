@@ -12,6 +12,7 @@ sed \
     -e "s/\${AUTHOR}/${5}/" \
     -e "s/\${EMAIL}/${6}/" \
     -e "s/\${YEAR}/${7}/" \
+    -e "s/\${ARCH}/${8}/" \
     generate_deb.sh | tail -n +`grep -n "^exit 0" generate_deb.sh | cut -f1 -d:` | tail -n +2 > "${1}/debbuild.sh"
 chmod a+x "${1}/debbuild.sh"
 exit 0
@@ -23,6 +24,7 @@ mkdir pkg/debian/source
 
 DEBEMAIL='${EMAIL}'
 DEBFULLNAME='${NAME}'
+DISTRIB_ID=`cat /etc/*{release,version} 2>/dev/null | grep DISTRIB_ID | cut -d "=" -f2`
 pkgver=`echo '${VERSION}' | sed "s/-/+/g"`
 pkgdate=`date +"%a, %d %b %Y %R:%S %z"`
 pkgdir=`readlink -f pkg/debian/${NAME}`
@@ -36,7 +38,7 @@ echo "Standards-Version: 4.0.0"          >> control
 echo "Homepage:"                         >> control
 echo ""                                  >> control
 echo "Package: ${NAME}"                  >> control
-echo "Architecture: all"                 >> control
+echo "Architecture: ${ARCH}"             >> control
 echo "Depends: \${misc:Depends}, liblua5.1, curl" >> control
 echo "Description: ${DESC}"              >> control
 
@@ -62,6 +64,10 @@ echo -e "\noverride_dh_auto_configure: ;"         >> rules
 echo -e "\noverride_dh_auto_build:\n\tninja -C .." >> rules
 echo -e "\noverride_dh_auto_test: ;"              >> rules
 echo -e "\noverride_dh_auto_install:\n\tDESTDIR=\"${pkgdir}\" ninja -C .. install" >> rules
+if [[ $DISTRIB_ID == Arch ]]
+then
+    echo -e "\noverride_dh_shlibdeps:\n\tdh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info" >> rules
+fi
 
 echo 10 > compat
 echo "3.0 (quilt)" > source/format
@@ -70,4 +76,4 @@ chmod a+x rules
 
 cd ../..
 
-echo -n "${NAME}_${VERSION}_all.deb" > deb_targetfile
+echo -n "${NAME}_${VERSION}_${ARCH}.deb" > deb_targetfile

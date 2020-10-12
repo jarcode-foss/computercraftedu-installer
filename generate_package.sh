@@ -16,7 +16,7 @@ sed '/__SPLIT__/q' "${2}/p_out.wxs" | head -n -1 >| "${2}/p_post.wxs"
 cd "${2}"
 # shitfuckery to deal with the expected symlink
 T=`find $3 -type l -print`
-find `echo $T | xargs realpath` -name *.lua | xargs -L1 basename | awk '{print ENVIRON["T"] "/" $0}' | awk '{print "./" $0}' | wixl-heat --directory-ref INSTALLDIR --component-group BaseLua -p ./ --var V | sed -e "s/\$(V)/${2//\//\\/}/" | sed -e '1,2d' | head -n -3 >> p_post.wxs
+find `echo $T | xargs realpath` -name *.lua | xargs -L1 basename | awk -v t="$T" '{print t "/" $0}' | awk '{print "./" $0}' | wixl-heat --directory-ref INSTALLDIR --component-group BaseLua -p ./ --var V | sed -e "s/\$(V)/${2//\//\\/}/" | sed -e '1,2d' | head -n -3 >> p_post.wxs
 cd $cwd
 find resources -type f -print | awk '{print "./" $0}' | wixl-heat --directory-ref INSTALLDIR --component-group BaseResources -p ./ --var sys.CURRENTDIR | sed -e '1,2d' | head -n -3 >> "${2}/p_post.wxs"
 
